@@ -2,6 +2,8 @@
 
 # Echo client program
 import socket, sys, re
+import os
+from os import read, write
 sys.path.append("../lib")       # for params
 import params
 
@@ -50,7 +52,7 @@ if s is None:
     print('could not open socket')
     sys.exit(1)
 
-outMessage = "Hello world!".encode()
+outMessage = os.read(os.open("bytesAndNames.txt", os.O_RDONLY), 1000)
 while len(outMessage):
     print("sending '%s'" % outMessage.decode())
     bytesSent = s.send(outMessage)
@@ -58,12 +60,19 @@ while len(outMessage):
 
 data = s.recv(1024).decode()
 print("Received '%s'" % data)
+if data == "recived":
+    fd = os.open("compressed.txt", os.O_RDONLY)
+    ibuff = os.read(fd, 100)
+    print(ibuff)
+    while len(ibuff):
+        outMessage += ibuff
+        ibuff = os.read(fd, 100)
 
-outMessage = "Hello world!"
-while len(outMessage):
-    print("sending '%s'" % outMessage)
-    bytesSent = s.send(outMessage.encode())
-    outMessage = outMessage[bytesSent:]
+    print(outMessage)
+    while len(outMessage):
+        bytesSent = s.send(outMessage)
+        outMessage = outMessage[bytesSent:]
+
 
 s.shutdown(socket.SHUT_WR)      # no more output
 
